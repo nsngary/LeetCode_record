@@ -2,7 +2,7 @@ name: LeetCode Sync
 
 on:
   schedule:
-    - cron: '0 2 * * *'      # 每日 10:00 (台灣)
+    - cron: '0 2 * * *'        # 每天 10:00 (台灣)
   workflow_dispatch:
 
 jobs:
@@ -11,9 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: deep5050/leetcode-action@main
+      # Josh Cai 的 Action
+      - uses: joshcai/leetcode-sync@v1.7
         with:
-          github-token:  ${{ secrets.GITHUB_TOKEN }}
-          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
-          target-directory: problems      # 存放資料夾
-          language: python3
+          LEETCODE_SESSION:  ${{ secrets.LEETCODE_SESSION }}
+          DIR: problems                # 存放資料夾
+          LANG: python3                # 抓 Python3 解答；多語言用逗號分隔
+
+      # 只有有變化才 commit
+      - name: Commit & Push
+        run: |
+          git config user.name  github-actions
+          git config user.email github-actions@github.com
+          git add problems || true
+          git commit -m "Auto-sync LeetCode" || exit 0
+          git push
