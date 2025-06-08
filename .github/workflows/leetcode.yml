@@ -1,0 +1,21 @@
+name: 🧠 LeetCode Sync
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 每日 10:00 (台灣時間)
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Sync LeetCode Submissions
+        uses: shihanng/leetcode-export@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          session: ${{ secrets.LEETCODE_SESSION }}
+          csrftoken: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+          language: python3
