@@ -2,7 +2,7 @@ name: LeetCode Sync
 
 on:
   schedule:
-    - cron: '0 2 * * *'      # 每天 10:00 (台灣)
+    - cron: '0 2 * * *'      # 每日 10:00 (台灣)
   workflow_dispatch:
 
 jobs:
@@ -11,33 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install leetcode-cli
-        run: npm install -g leetcode-cli
-
-      - name: Write cookie config
-        run: |
-          mkdir -p ~/.lc
-          echo '{
-            "cookies": {
-              "leetcode_session": "'"${{ secrets.LEETCODE_SESSION }}"'",
-              "csrftoken": "'"${{ secrets.CSRFTOKEN }}"'"
-            }
-          }' > ~/.lc/config.json
-
-      - name: Fetch accepted problems
-        run: |
-          mkdir -p problems
-          cd problems
-          leetcode list -q -s ac -o json > list.json
-          for slug in $(jq -r '.[].slug' list.json); do
-            echo "📥 $slug"
-            leetcode show "$slug" -g -l python3 > "${slug}.py"
-          done
-
-      - name: Commit & Push
-        run: |
-          git config user.name  github-actions
-          git config user.email github-actions@github.com
-          git add problems || true
-          git commit -m "Auto-sync LeetCode" || exit 0
-          git push -u origin main
+      - uses: deep5050/leetcode-action@v2
+        with:
+          github-token:  ${{ secrets.GITHUB_TOKEN }}
+          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+          target-directory: problems      # 存放資料夾
+          language: python3
