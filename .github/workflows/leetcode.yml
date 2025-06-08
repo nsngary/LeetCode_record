@@ -20,7 +20,7 @@ jobs:
           echo '{
             "cookies": {
               "leetcode_session": "'"${{ secrets.LEETCODE_SESSION }}"'",
-              "csrftoken": "'"${{ secrets.LEETCODE_CSRF_TOKEN }}"'"
+              "csrftoken": "'"${{ secrets.CSRFTOKEN }}"'"
             }
           }' > ~/.lc/config.json
 
