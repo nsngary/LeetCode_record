@@ -1,21 +1,45 @@
-name: 🧠 LeetCode Sync
+name: 🧠 LeetCode Sync with Cookie
 
 on:
   schedule:
-    - cron: '0 2 * * *' # 每日 10:00 (台灣時間)
+    - cron: "0 2 * * *" # 每日自動同步（台灣早上10點）
   workflow_dispatch:
 
 jobs:
-  sync:
+  leetcode-sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Sync LeetCode Submissions
-        uses: shihanng/leetcode-export@main
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          session: ${{ secrets.LEETCODE_SESSION }}
-          csrftoken: ${{ secrets.LEETCODE_CSRF_TOKEN }}
-          language: python3
+          node-version: '16'
+
+      - name: Install leetcode-cli
+        run: npm install -g leetcode-cli
+
+      - name: Configure LeetCode with Cookie
+        run: |
+          leetcode config -c
+        env:
+          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+          CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+
+      - name: Create problem directory and fetch solved problems
+        run: |
+          mkdir -p problems
+          cd problems
+          leetcode list -q -s ac -o json > list.json
+          for title in $(jq -r '.[].slug' list.json); do
+            leetcode show $title -g -l python3 > "${title}.py"
+          done
+
+      - name: Commit and Push
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "🔁 Auto-sync LeetCode solutions" || echo "No changes"
+          git push
