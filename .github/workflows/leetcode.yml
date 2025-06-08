@@ -1,51 +1,28 @@
-name: 🧠 LeetCode Daily Sync (via Cookie)
+name: LeetCode Sync
 
 on:
   schedule:
-    - cron: "0 2 * * *"  # 每日早上 10:00（台灣時間 UTC+8）
-  workflow_dispatch:      # 手動觸發
+    - cron: '0 2 * * *'      # 每天 10:00 (台灣)
+  workflow_dispatch:
 
 jobs:
-  leetcode-sync:
+  sync:
     runs-on: ubuntu-latest
-
     steps:
-      - name: ✅ Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: ⚙️ Setup Node.js (for leetcode-cli)
-        uses: actions/setup-node@v3
+      - name: Pull accepted solutions
+        uses: skygragon/leetcode-cli-action@v0.2
         with:
-          node-version: '16'
+          username: ${{ secrets.LEETCODE_USERNAME }}
+          password: ${{ secrets.LEETCODE_PASSWORD }}
+          target-dir: problems
+          lang: python3           # 換 C++/Java 就改成 cpp / java
 
-      - name: 📦 Install leetcode-cli
-        run: npm install -g leetcode-cli
-
-      - name: 🔐 Configure Cookie for LeetCode Login
+      - name: Commit & Push
         run: |
-          mkdir -p ~/.leetcode
-          echo '{
-            "cookies": {
-              "LEETCODE_SESSION": "'"${{ secrets.LEETCODE_SESSION }}"'",
-              "csrftoken": "'"${{ secrets.LEETCODE_CSRF_TOKEN }}"'"
-            },
-            "CN": false
-          }' > ~/.leetcode/config.json
-
-      - name: 🧩 Fetch Solved Problems
-        run: |
-          mkdir -p problems
-          cd problems
-          leetcode list -q -s ac -o json > list.json
-          for title in $(jq -r '.[].slug' list.json); do
-            echo "📥 Downloading: $title"
-            leetcode show $title -g -l python3 > "${title}.py"
-          done
-
-      - name: ✅ Commit and Push
-        run: |
-          git config user.name github-actions
+          git config user.name  github-actions
           git config user.email github-actions@github.com
-          git add .
-          git commit -m "🔁 Auto-sync LeetCode solutions" || echo "Nothing to commit"
-          git push origin main || echo "Nothing to push"
+          git add problems || true
+          git commit -m "Auto-sync LeetCode" || exit 0
+          git push
