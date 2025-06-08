@@ -16,14 +16,13 @@ jobs:
 
       - name: Write cookie config
         run: |
-          mkdir -p ~/.leetcode
+          mkdir -p ~/.lc
           echo '{
-            "cookies":{
-              "LEETCODE_SESSION":"'"${{ secrets.LEETCODE_SESSION }}"'",
-              "csrftoken":"'"${{ secrets.LEETCODE_CSRF_TOKEN }}"'"
-            },
-            "CN":false
-          }' > ~/.leetcode/config.json
+            "cookies": {
+              "LEETCODE_SESSION": "'"${{ secrets.LEETCODE_SESSION }}"'",
+              "csrftoken": "'"${{ secrets.LEETCODE_CSRF_TOKEN }}"'"
+            }
+          }' > ~/.lc/config.json
 
       - name: Fetch accepted problems
         run: |
