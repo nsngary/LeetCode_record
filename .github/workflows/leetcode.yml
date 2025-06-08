@@ -19,7 +19,7 @@ jobs:
           mkdir -p ~/.lc
           echo '{
             "cookies": {
-              "LEETCODE_SESSION": "'"${{ secrets.LEETCODE_SESSION }}"'",
+              "leetcode_session": "'"${{ secrets.LEETCODE_SESSION }}"'",
               "csrftoken": "'"${{ secrets.LEETCODE_CSRF_TOKEN }}"'"
             }
           }' > ~/.lc/config.json
