@@ -2,22 +2,32 @@ name: LeetCode Sync
 
 on:
   schedule:
-    - cron: '0 2 * * *'      # 每天 10:00 (台灣)
+    - cron:  '0 2 * * *'    # 每日 10:00 (台灣)
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Pull accepted solutions
-        uses: skygragon/leetcode-cli-action@v0.2
-        with:
-          username: ${{ secrets.LEETCODE_USERNAME }}
-          password: ${{ secrets.LEETCODE_PASSWORD }}
-          target-dir: problems
-          lang: python3           # 換 C++/Java 就改成 cpp / java
+      - name: Install leetcode-cli
+        run: npm install -g leetcode-cli
+
+      - name: Login & fetch accepted submissions
+        env:
+          LC_USER: ${{ secrets.LEETCODE_USERNAME }}
+          LC_PASS: ${{ secrets.LEETCODE_PASSWORD }}
+        run: |
+          leetcode user -l -u "$LC_USER" -p "$LC_PASS"
+          mkdir -p problems
+          cd problems
+          leetcode list -q -s ac -o json > list.json
+          for slug in $(jq -r '.[].slug' list.json); do
+            echo "📥 $slug"
+            leetcode show "$slug" -g -l python3 > "${slug}.py"
+          done
 
       - name: Commit & Push
         run: |
