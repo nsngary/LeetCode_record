@@ -4,7 +4,7 @@ class Solution(object):
         :type s: str
         :rtype: int
         """
-        roman_map = {
+        m = {
                     'I': 1,
                     'V': 5,
                     'X': 10,
@@ -14,17 +14,12 @@ class Solution(object):
                     'M': 1000
                 }
 
-        value = 0
         total = 0
 
-        for i in reversed(s):
-            next_value = roman_map[i]
-            if next_value >= value:
-                total += next_value
+        for i in range(len(s)):
+            if i < len(s) -1 and m[s[i]] < m[s[i+1]]:
+                total -= m[s[i]]
             else:
-                total -= next_value
+                total += m[s[i]]
             
-            
-
-            value = next_value
         return total
